@@ -25,6 +25,7 @@ Claude's training data may contain outdated or incomplete R3F patterns. These sk
 | `r3f-shaders` | shaderMaterial, custom materials, uniforms in R3F |
 | `r3f-postprocessing` | @react-three/postprocessing, EffectComposer, effects |
 | `r3f-interaction` | Pointer events, controls, raycasting, KeyboardControls |
+| `r3f-physics` | RigidBody, colliders, forces, joints, sensors with Rapier |
 
 ## How It Works
 
@@ -35,6 +36,7 @@ Skills are automatically activated based on context. When you ask for R3F help, 
 - "Add bloom effect" → `r3f-postprocessing`
 - "Load a GLTF model" → `r3f-loaders`
 - "Make an object clickable" → `r3f-interaction`
+- "Add physics to falling cubes" → `r3f-physics`
 
 ## Installation
 
@@ -45,7 +47,7 @@ Copy the `skills/` directory to your Claude Code skills location.
 - `@react-three/fiber` - Core R3F renderer
 - `@react-three/drei` - Essential helpers and abstractions
 - `@react-three/postprocessing` - Post-processing effects
-- `@react-three/rapier` - Physics (referenced where relevant)
+- `@react-three/rapier` - Physics engine integration
 - `three` - Underlying Three.js library
 
 ## Version Compatibility
