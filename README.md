@@ -1,10 +1,10 @@
-# React Three Fiber Skills for Claude Code
+# React Three Fiber Skills for Claude Code & Codex
 
-A collection of specialized skill files that enhance Claude Code's ability to work with **React Three Fiber (R3F)** - the React renderer for Three.js.
+A collection of specialized skill files that enhance **Claude Code** and **OpenAI Codex** abilities to work with **React Three Fiber (R3F)** - the React renderer for Three.js.
 
 ## Why These Skills?
 
-Claude's training data may contain outdated or incomplete R3F patterns. These skills provide:
+LLM training data may contain outdated or incomplete R3F patterns. These skills provide:
 
 - Accurate, up-to-date API references for R3F, Drei, and the ecosystem
 - Idiomatic React patterns for 3D development
@@ -29,7 +29,7 @@ Claude's training data may contain outdated or incomplete R3F patterns. These sk
 
 ## How It Works
 
-Skills are automatically activated based on context. When you ask for R3F help, relevant skills load to provide accurate guidance.
+Skills are automatically activated based on context. When you ask for R3F help, relevant skills load to provide accurate guidance. Both Claude Code and Codex use the same SKILL.md format with YAML frontmatter.
 
 **Example triggers:**
 - "Create a rotating cube in R3F" → `r3f-fundamentals`, `r3f-animation`
@@ -40,7 +40,22 @@ Skills are automatically activated based on context. When you ask for R3F help, 
 
 ## Installation
 
-Copy the `skills/` directory to your Claude Code skills location.
+### Quick Install
+
+```bash
+npx add-skill EnzeD/r3f-skills
+```
+
+This installs skills for your detected agent (Claude Code, Codex, OpenCode, or Cursor).
+
+### Manual Install
+
+Copy the `skills/` directory to your agent's skills location:
+
+| Agent | Project | Global |
+|-------|---------|--------|
+| Claude Code | `.claude/skills/` | `~/.claude/skills/` |
+| Codex | `.codex/skills/` | `~/.codex/skills/` |
 
 ## Key Packages Covered
 
