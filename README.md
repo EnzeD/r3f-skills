@@ -26,6 +26,7 @@ LLM training data may contain outdated or incomplete R3F patterns. These skills 
 | `r3f-postprocessing` | @react-three/postprocessing, EffectComposer, effects |
 | `r3f-interaction` | Pointer events, controls, raycasting, KeyboardControls |
 | `r3f-physics` | RigidBody, colliders, forces, joints, sensors with Rapier |
+| `r3f-video-production` | Cinematic video production — glass materials, camera choreography, particle effects, frame-accurate PNG export |
 
 ## How It Works
 
@@ -37,6 +38,8 @@ Skills are automatically activated based on context. When you ask for R3F help, 
 - "Load a GLTF model" → `r3f-loaders`
 - "Make an object clickable" → `r3f-interaction`
 - "Add physics to falling cubes" → `r3f-physics`
+- "Create a product showcase video" → `r3f-video-production`
+- "Make a glass card animation" → `r3f-video-production`, `r3f-materials`
 
 ## Installation
 
