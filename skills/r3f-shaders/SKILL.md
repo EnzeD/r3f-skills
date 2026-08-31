@@ -64,6 +64,7 @@ export default function Example() {
 - Shader source, defines, and feature changes can require recompilation. Use the class's `key` for hot reload; do not change React keys during animation.
 - `extend(Class)` is available in Fiber 9. For a lowercase global element, augment `ThreeElements` with `ThreeElement<typeof Class>`; removed `Object3DNode` is not a replacement for material typing.
 - GLSL strings are not checked by TypeScript. Render them and inspect shader compiler errors, including configurations with the actual renderer and effects.
+- Shader source sits inside a JavaScript template literal, so a backtick or `${` anywhere in the GLSL, including in its comments, silently ends the string and breaks the module. Write shader comments without backticks and let the type-checker catch it rather than reading for it.
 
 ## Space, color, and geometry
 
