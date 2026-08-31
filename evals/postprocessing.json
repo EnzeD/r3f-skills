@@ -1,0 +1,25 @@
+{
+  "skill_name": "r3f-postprocessing",
+  "skill_path": "skills/r3f-postprocessing",
+  "baseline": "no_skill",
+  "evals": [
+    {
+      "id": 0,
+      "name": "selective-hover-glow",
+      "trap": "Bloom inside <Selection> is not selective; needs SelectiveBloom + Select + lights (SKILL.md L54-55)",
+      "prompt": "i want ONLY the object the user is currently hovering to glow, everything else stays normal. i'm on @react-three/postprocessing 3.1 with fiber 9.7 / three 0.185, typescript strict. i wrapped my meshes in <Selection> and put <Bloom> in the EffectComposer but every bright thing in the scene glows, not just the hovered one - i've got a couple of emissive sign meshes that are already bright. how do i make it actually only the hovered one?"
+    },
+    {
+      "id": 1,
+      "name": "composer-color-shift",
+      "trap": "EffectComposer disables renderer tone mapping; needs a ToneMapping effect, no duplicate output conversion (SKILL.md L57)",
+      "prompt": "i spent ages tuning the colors and lighting in my r3f scene and it looked great. then i added an <EffectComposer> with just a subtle <Vignette> and now the whole thing looks flat and washed out - all my contrast is gone and the bright areas are blown out. i haven't changed any materials or lights. fiber 9.7, @react-three/postprocessing 3.1, three 0.185. what happened and how do i get my look back?"
+    },
+    {
+      "id": 2,
+      "name": "dof-ssao-setup",
+      "trap": "DepthOfField target is a world position not a mesh ref; SSAO needs EffectComposer enableNormalPass (SKILL.md L62-63)",
+      "prompt": "building a little diorama scene in r3f (fiber 9.7, three 0.185, @react-three/postprocessing 3.1, ts strict). two things i can't get working: 1) i want depth of field focused on my character mesh which walks around the scene - i passed target={characterRef} to <DepthOfField> and it errors/does nothing. 2) i added <SSAO> for contact shading and it has literally zero visible effect no matter what i set intensity to. can you give me a working EffectComposer setup for both?"
+    }
+  ]
+}
