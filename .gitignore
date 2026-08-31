@@ -1,0 +1,8 @@
+node_modules/
+.generated/
+dist/
+test-results/
+playwright-report/
+output/playwright/
+.playwright-cli/
+.DS_Store

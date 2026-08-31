@@ -1,640 +1,77 @@
 ---
 name: r3f-textures
-description: React Three Fiber textures - useTexture, texture loading, environment maps, texture configuration. Use when loading images, working with PBR texture sets, cubemaps, HDR environments, or optimizing texture usage.
+description: Configure textures in React Three Fiber, including color spaces, UV channels, sampling, video, and render targets. Use for texture appearance or memory issues; use loader guidance for model-loading workflows.
 ---
 
-# React Three Fiber Textures
+# React Three Fiber textures
 
-## Quick Start
+Inspect installed Three.js, Fiber, Drei, and renderer versions first. Examples target Fiber 9 / React 19 and Three.js r185 with WebGL. Preserve correctly configured assets rather than resetting every texture.
 
-```tsx
-import { Canvas } from '@react-three/fiber'
-import { useTexture } from '@react-three/drei'
+## Color versus data
 
-function TexturedBox() {
-  const texture = useTexture('/textures/wood.jpg')
+| Texture content | Color-space annotation |
+| --- | --- |
+| PNG/JPEG base color or emissive color | `SRGBColorSpace` |
+| Roughness, metalness, normal, AO, alpha/masks | `NoColorSpace` |
+| Linear HDR/EXR lighting data | Preserve loader-provided linear metadata |
 
-  return (
-    <mesh>
-      <boxGeometry />
-      <meshStandardMaterial map={texture} />
-    </mesh>
-  )
-}
+`NoColorSpace` is not another name for `LinearSRGBColorSpace`: scalar/vector data has no color space. Do not blanket-convert every map to sRGB.
 
-export default function App() {
-  return (
-    <Canvas>
-      <ambientLight />
-      <TexturedBox />
-    </Canvas>
-  )
-}
-```
+## Load a color map
 
-## useTexture Hook (Drei)
-
-The recommended way to load textures in R3F.
-
-### Single Texture
+Mount under Suspense inside Canvas. The file path is an application asset, not a file provided by this skill.
 
 ```tsx
 import { useTexture } from '@react-three/drei'
-
-function SingleTexture() {
-  const texture = useTexture('/textures/color.jpg')
-
-  return (
-    <mesh>
-      <planeGeometry args={[5, 5]} />
-      <meshBasicMaterial map={texture} />
-    </mesh>
-  )
-}
-```
-
-### Multiple Textures (Array)
-
-```tsx
-function MultipleTextures() {
-  const [colorMap, normalMap, roughnessMap] = useTexture([
-    '/textures/color.jpg',
-    '/textures/normal.jpg',
-    '/textures/roughness.jpg',
-  ])
-
-  return (
-    <mesh>
-      <sphereGeometry args={[1, 64, 64]} />
-      <meshStandardMaterial
-        map={colorMap}
-        normalMap={normalMap}
-        roughnessMap={roughnessMap}
-      />
-    </mesh>
-  )
-}
-```
-
-### Named Object (Recommended for PBR)
-
-```tsx
-function PBRTextures() {
-  // Named object automatically spreads to material
-  const textures = useTexture({
-    map: '/textures/color.jpg',
-    normalMap: '/textures/normal.jpg',
-    roughnessMap: '/textures/roughness.jpg',
-    metalnessMap: '/textures/metalness.jpg',
-    aoMap: '/textures/ao.jpg',
-    displacementMap: '/textures/displacement.jpg',
-  })
-
-  return (
-    <mesh>
-      <sphereGeometry args={[1, 64, 64]} />
-      <meshStandardMaterial
-        {...textures}
-        displacementScale={0.1}
-      />
-    </mesh>
-  )
-}
-```
-
-### With Texture Configuration
-
-```tsx
-import { useTexture } from '@react-three/drei'
-import * as THREE from 'three'
-
-function ConfiguredTextures() {
-  const textures = useTexture({
-    map: '/textures/color.jpg',
-    normalMap: '/textures/normal.jpg',
-  }, (textures) => {
-    // Configure textures after loading
-    Object.values(textures).forEach(texture => {
-      texture.wrapS = texture.wrapT = THREE.RepeatWrapping
-      texture.repeat.set(4, 4)
-    })
-  })
-
-  return (
-    <mesh>
-      <planeGeometry args={[10, 10]} />
-      <meshStandardMaterial {...textures} />
-    </mesh>
-  )
-}
-```
-
-### Preloading
-
-```tsx
-import { useTexture } from '@react-three/drei'
-
-// Preload at module level
-useTexture.preload('/textures/hero.jpg')
-useTexture.preload(['/tex1.jpg', '/tex2.jpg'])
-
-function Component() {
-  // Will be instant if preloaded
-  const texture = useTexture('/textures/hero.jpg')
-}
-```
-
-## useLoader (Core R3F)
-
-For more control over loading.
-
-```tsx
-import { useLoader } from '@react-three/fiber'
-import { TextureLoader } from 'three'
-
-function WithUseLoader() {
-  const texture = useLoader(TextureLoader, '/textures/color.jpg')
-
-  // Multiple textures
-  const [color, normal] = useLoader(TextureLoader, [
-    '/textures/color.jpg',
-    '/textures/normal.jpg',
-  ])
-
-  return (
-    <mesh>
-      <boxGeometry />
-      <meshStandardMaterial map={color} normalMap={normal} />
-    </mesh>
-  )
-}
-
-// Preload
-useLoader.preload(TextureLoader, '/textures/color.jpg')
-```
-
-## Texture Configuration
-
-### Wrapping Modes
-
-```tsx
-import * as THREE from 'three'
-
-function ConfigureWrapping() {
-  const texture = useTexture('/textures/tile.jpg', (tex) => {
-    // Wrapping
-    tex.wrapS = THREE.RepeatWrapping      // Horizontal: ClampToEdgeWrapping, RepeatWrapping, MirroredRepeatWrapping
-    tex.wrapT = THREE.RepeatWrapping      // Vertical
-
-    // Repeat
-    tex.repeat.set(4, 4)                  // Tile 4x4
-
-    // Offset
-    tex.offset.set(0.5, 0.5)              // Shift UV
-
-    // Rotation
-    tex.rotation = Math.PI / 4            // Rotate 45 degrees
-    tex.center.set(0.5, 0.5)              // Rotation pivot
-  })
-
-  return (
-    <mesh>
-      <planeGeometry args={[10, 10]} />
-      <meshStandardMaterial map={texture} />
-    </mesh>
-  )
-}
-```
-
-### Filtering
-
-```tsx
-function ConfigureFiltering() {
-  const texture = useTexture('/textures/color.jpg', (tex) => {
-    // Minification (texture larger than screen pixels)
-    tex.minFilter = THREE.LinearMipmapLinearFilter  // Smooth with mipmaps (default)
-    tex.minFilter = THREE.NearestFilter             // Pixelated
-    tex.minFilter = THREE.LinearFilter              // Smooth, no mipmaps
-
-    // Magnification (texture smaller than screen pixels)
-    tex.magFilter = THREE.LinearFilter   // Smooth (default)
-    tex.magFilter = THREE.NearestFilter  // Pixelated (retro style)
-
-    // Anisotropic filtering (sharper at angles)
-    tex.anisotropy = 16  // Usually renderer.capabilities.getMaxAnisotropy()
-
-    // Generate mipmaps
-    tex.generateMipmaps = true  // Default
-  })
-}
-```
-
-### Color Space
-
-Important for accurate colors.
-
-```tsx
-function ConfigureColorSpace() {
-  const [colorMap, normalMap, roughnessMap] = useTexture([
-    '/textures/color.jpg',
-    '/textures/normal.jpg',
-    '/textures/roughness.jpg',
-  ], (textures) => {
-    // Color/albedo textures should use sRGB
-    textures[0].colorSpace = THREE.SRGBColorSpace
-
-    // Data textures (normal, roughness, metalness, ao) use Linear
-    // This is the default, so usually no action needed
-    // textures[1].colorSpace = THREE.LinearSRGBColorSpace
-    // textures[2].colorSpace = THREE.LinearSRGBColorSpace
-  })
-}
-```
-
-## Environment Maps
-
-### useEnvironment Hook
-
-```tsx
-import { useEnvironment, Environment } from '@react-three/drei'
-
-// Use as texture
-function EnvMappedSphere() {
-  const envMap = useEnvironment({ preset: 'sunset' })
-
-  return (
-    <mesh>
-      <sphereGeometry args={[1, 64, 64]} />
-      <meshStandardMaterial
-        metalness={1}
-        roughness={0}
-        envMap={envMap}
-      />
-    </mesh>
-  )
-}
-
-// Or use Environment component for scene-wide
-function Scene() {
-  return (
-    <>
-      <Environment preset="sunset" background />
-      <Mesh />
-    </>
-  )
-}
-```
-
-### HDR Environment
-
-```tsx
-import { useEnvironment } from '@react-three/drei'
-
-function HDREnvironment() {
-  const envMap = useEnvironment({ files: '/hdri/studio.hdr' })
-
-  return (
-    <mesh>
-      <sphereGeometry args={[1, 64, 64]} />
-      <meshStandardMaterial
-        metalness={1}
-        roughness={0}
-        envMap={envMap}
-        envMapIntensity={1}
-      />
-    </mesh>
-  )
-}
-```
-
-### Cube Map
-
-```tsx
-import { useCubeTexture } from '@react-three/drei'
-
-function CubeMapTexture() {
-  const envMap = useCubeTexture(
-    ['px.jpg', 'nx.jpg', 'py.jpg', 'ny.jpg', 'pz.jpg', 'nz.jpg'],
-    { path: '/textures/cube/' }
-  )
-
-  return (
-    <mesh>
-      <sphereGeometry args={[1, 64, 64]} />
-      <meshStandardMaterial envMap={envMap} metalness={1} roughness={0} />
-    </mesh>
-  )
-}
-```
-
-## Video Textures
-
-```tsx
-import { useVideoTexture } from '@react-three/drei'
-
-function VideoPlane() {
-  const texture = useVideoTexture('/videos/sample.mp4', {
-    start: true,
-    loop: true,
-    muted: true,
-  })
-
-  return (
-    <mesh>
-      <planeGeometry args={[16, 9].map(x => x * 0.5)} />
-      <meshBasicMaterial map={texture} toneMapped={false} />
-    </mesh>
-  )
-}
-```
-
-## Canvas Textures
-
-```tsx
-import { useRef, useEffect } from 'react'
-import { useFrame } from '@react-three/fiber'
-import * as THREE from 'three'
-
-function CanvasTexture() {
-  const meshRef = useRef()
-  const textureRef = useRef()
-
-  useEffect(() => {
-    const canvas = document.createElement('canvas')
-    canvas.width = 256
-    canvas.height = 256
-    const ctx = canvas.getContext('2d')
-
-    // Draw on canvas
-    ctx.fillStyle = 'red'
-    ctx.fillRect(0, 0, 256, 256)
-    ctx.fillStyle = 'white'
-    ctx.font = '48px Arial'
-    ctx.fillText('Hello', 50, 150)
-
-    textureRef.current = new THREE.CanvasTexture(canvas)
-  }, [])
-
-  // Update texture dynamically
-  useFrame(({ clock }) => {
-    if (textureRef.current) {
-      const canvas = textureRef.current.image
-      const ctx = canvas.getContext('2d')
-      ctx.fillStyle = `hsl(${clock.elapsedTime * 50}, 100%, 50%)`
-      ctx.fillRect(0, 0, 256, 256)
-      textureRef.current.needsUpdate = true
-    }
-  })
-
-  return (
-    <mesh ref={meshRef}>
-      <planeGeometry args={[2, 2]} />
-      <meshBasicMaterial map={textureRef.current} />
-    </mesh>
-  )
-}
-```
-
-## Data Textures
-
-```tsx
-import { useMemo } from 'react'
-import * as THREE from 'three'
-
-function NoiseTexture() {
-  const texture = useMemo(() => {
-    const size = 256
-    const data = new Uint8Array(size * size * 4)
-
-    for (let i = 0; i < size * size; i++) {
-      const value = Math.random() * 255
-      data[i * 4] = value
-      data[i * 4 + 1] = value
-      data[i * 4 + 2] = value
-      data[i * 4 + 3] = 255
-    }
-
-    const texture = new THREE.DataTexture(data, size, size)
+import { SRGBColorSpace } from 'three'
+
+export default function Example() {
+  const map = useTexture('/textures/checker.png', (texture) => {
+    // This URL is consistently used as a color texture by all consumers.
+    texture.colorSpace = SRGBColorSpace
     texture.needsUpdate = true
-    return texture
-  }, [])
-
-  return (
-    <mesh>
-      <planeGeometry args={[2, 2]} />
-      <meshBasicMaterial map={texture} />
-    </mesh>
-  )
-}
-```
-
-## Render Targets
-
-Render to texture.
-
-```tsx
-import { useFBO } from '@react-three/drei'
-import { useFrame } from '@react-three/fiber'
-import { useRef } from 'react'
-
-function RenderToTexture() {
-  const fbo = useFBO(512, 512)
-  const meshRef = useRef()
-  const otherSceneRef = useRef()
-
-  useFrame(({ gl, camera }) => {
-    // Render other scene to FBO
-    gl.setRenderTarget(fbo)
-    gl.render(otherSceneRef.current, camera)
-    gl.setRenderTarget(null)
   })
-
-  return (
-    <>
-      {/* Scene to render to texture */}
-      <group ref={otherSceneRef}>
-        <mesh position={[0, 0, -5]}>
-          <sphereGeometry args={[1, 32, 32]} />
-          <meshStandardMaterial color="red" />
-        </mesh>
-      </group>
-
-      {/* Display the texture */}
-      <mesh ref={meshRef}>
-        <planeGeometry args={[4, 4]} />
-        <meshBasicMaterial map={fbo.texture} />
-      </mesh>
-    </>
-  )
-}
-```
-
-## Texture Atlas / Sprite Sheet
-
-```tsx
-import { useTexture } from '@react-three/drei'
-import { useState } from 'react'
-import { useFrame } from '@react-three/fiber'
-import * as THREE from 'three'
-
-function SpriteAnimation() {
-  const texture = useTexture('/textures/spritesheet.png')
-  const [frame, setFrame] = useState(0)
-
-  // Configure texture
-  texture.wrapS = texture.wrapT = THREE.ClampToEdgeWrapping
-  texture.repeat.set(1/4, 1/4)  // 4x4 sprite sheet
-
-  useFrame(({ clock }) => {
-    const newFrame = Math.floor(clock.elapsedTime * 10) % 16
-    if (newFrame !== frame) {
-      setFrame(newFrame)
-      const col = newFrame % 4
-      const row = Math.floor(newFrame / 4)
-      texture.offset.set(col / 4, 1 - (row + 1) / 4)
-    }
-  })
-
   return (
     <mesh>
-      <planeGeometry args={[1, 1]} />
-      <meshBasicMaterial map={texture} transparent />
+      <planeGeometry args={[3, 3]} />
+      <meshStandardMaterial map={map} roughness={1} />
     </mesh>
   )
 }
 ```
 
-## Material Texture Maps Reference
+Fiber handles common built-in color map props, and glTF loaders set texture metadata. Explicit annotation is especially important for custom shader uniforms or manually created textures.
 
-```tsx
-<meshStandardMaterial
-  // Base color (sRGB)
-  map={colorTexture}
+## Cache and ownership
 
-  // Surface detail (Linear)
-  normalMap={normalTexture}
-  normalScale={[1, 1]}
+- `useTexture`/`useLoader` cache by loader and URL inputs. The same source can return the same Texture object. Repeat, offset, wrapping, filters, and colorSpace changes can affect every consumer.
+- Clone the Texture object before per-instance configuration. Reuse the underlying image where possible; separately dispose only the clone you own. Do not dispose the cached source from an individual consumer.
+- Do not clear a loader cache during render. Cache eviction and GPU disposal are separate operations and require knowing that no active consumer still needs the resource.
+- Avoid replacing the uniform/texture object every frame; update offsets or owned values directly. On a demand loop, invalidate after imperative changes.
 
-  // Roughness (Linear, grayscale)
-  roughnessMap={roughnessTexture}
-  roughness={1}  // Multiplier
+## UVs and sampling
 
-  // Metalness (Linear, grayscale)
-  metalnessMap={metalnessTexture}
-  metalness={1}  // Multiplier
+- `texture.channel = 0` selects `uv`, 1 selects `uv1`, then `uv2` and `uv3`. Choose the actual geometry attribute; AO/light maps no longer universally require copying `uv` into `uv2`.
+- Repeat outside [0, 1] requires RepeatWrapping or MirroredRepeatWrapping. Offset/repeat/rotation are texture transforms; atlas animations generally do not need React state per frame.
+- Wrapping, color-space, and upload configuration changes may need `texture.needsUpdate`. Offset/repeat changes use the texture matrix and do not normally require re-uploading image data.
+- For pixel art, use nearest filtering deliberately. For minified surfaces, mipmaps reduce shimmer; cap anisotropy to the renderer's supported maximum and the scene's needs.
+- Power-of-two dimensions are not a universal WebGL2 requirement. Size textures for screen coverage, memory, compression-format constraints, and quality rather than an obsolete blanket rule.
+- Download size is not GPU memory size. Consider KTX2/Basis where supported; configure renderer capability detection and host decoder/transcoder assets deliberately.
+- For a replacement glTF color map, match the model's UV/orientation conventions; a manually loaded texture commonly needs `flipY=false`. Do not flip already configured glTF maps again.
 
-  // Ambient Occlusion (Linear, requires uv2)
-  aoMap={aoTexture}
-  aoMapIntensity={1}
+## Specialized textures
 
-  // Self-illumination (sRGB)
-  emissiveMap={emissiveTexture}
-  emissive="#ffffff"
-  emissiveIntensity={1}
+- Prefer `useVideoTexture` when its lifecycle fits. Check autoplay/muting, CORS, user gestures, and source cleanup; changing video resolution may require a new texture. Do not promise autoplay succeeds on every browser.
+- Canvas/DataTexture content changes need `needsUpdate`; data textures should keep data color-space semantics. Creating a texture in a frame loop leaks work/resources unless deliberately managed.
+- For render targets, read [offscreen rendering](references/render-targets.md). Never sample from a texture while rendering into that same target.
+- Keep environment maps on a lighting path (`Environment`/`useEnvironment`) rather than assigning a regular 2D image without a suitable mapping/PMREM workflow.
 
-  // Vertex displacement (Linear)
-  displacementMap={displacementTexture}
-  displacementScale={0.1}
-  displacementBias={0}
+## Verify
 
-  // Alpha (Linear)
-  alphaMap={alphaTexture}
-  transparent={true}
+Test a known color swatch, data maps under changing lights, texture orientation, repeated mounts, and two consumers with different UV transforms. Inspect GPU texture counts; they are counts, not byte-accurate memory measurements.
 
-  // Environment reflection
-  envMap={envTexture}
-  envMapIntensity={1}
+## Sources
 
-  // Lightmap (requires uv2)
-  lightMap={lightmapTexture}
-  lightMapIntensity={1}
-/>
-```
-
-## Second UV Channel (for AO/Lightmaps)
-
-```tsx
-import { useEffect, useRef } from 'react'
-
-function MeshWithUV2() {
-  const meshRef = useRef()
-
-  useEffect(() => {
-    // Copy uv to uv2 for aoMap/lightMap
-    const geometry = meshRef.current.geometry
-    geometry.setAttribute('uv2', geometry.attributes.uv)
-  }, [])
-
-  return (
-    <mesh ref={meshRef}>
-      <boxGeometry />
-      <meshStandardMaterial
-        aoMap={aoTexture}
-        aoMapIntensity={1}
-      />
-    </mesh>
-  )
-}
-```
-
-## Suspense Loading
-
-```tsx
-import { Suspense } from 'react'
-import { useTexture } from '@react-three/drei'
-
-function TexturedMesh() {
-  const texture = useTexture('/textures/large.jpg')
-  return (
-    <mesh>
-      <boxGeometry />
-      <meshStandardMaterial map={texture} />
-    </mesh>
-  )
-}
-
-function Fallback() {
-  return (
-    <mesh>
-      <boxGeometry />
-      <meshBasicMaterial color="gray" wireframe />
-    </mesh>
-  )
-}
-
-function Scene() {
-  return (
-    <Suspense fallback={<Fallback />}>
-      <TexturedMesh />
-    </Suspense>
-  )
-}
-```
-
-## Performance Tips
-
-1. **Use power-of-2 dimensions**: 256, 512, 1024, 2048
-2. **Compress textures**: Use KTX2/Basis for web
-3. **Enable mipmaps**: For distant objects
-4. **Limit texture size**: 2048 usually sufficient
-5. **Reuse textures**: Same texture = better batching
-6. **Preload important textures**: Avoid pop-in
-
-```tsx
-// Preload critical textures
-useTexture.preload('/textures/hero.jpg')
-
-// Check texture memory
-useFrame(({ gl }) => {
-  console.log('Textures:', gl.info.memory.textures)
-})
-
-// Dispose unused textures (R3F usually handles this)
-texture.dispose()
-```
-
-## See Also
-
-- `r3f-materials` - Applying textures to materials
-- `r3f-loaders` - Asset loading patterns
-- `r3f-shaders` - Custom texture sampling
+- [Color management](https://threejs.org/manual/en/color-management.html), [Texture](https://threejs.org/docs/#Texture).
+- [Drei useTexture](https://drei.docs.pmnd.rs/loaders/texture-use-texture), [useVideoTexture](https://drei.docs.pmnd.rs/loaders/video-texture-use-video-texture).
+- [Fiber 9 texture changes](https://github.com/pmndrs/react-three-fiber/blob/v9.7.0/docs/tutorials/v9-migration-guide.mdx).

@@ -1,0 +1,16 @@
+{
+  "reviewedOn": "2026-08-31",
+  "registry": "https://registry.npmjs.org",
+  "packages": {
+    "react": ["all"],
+    "react-dom": ["r3f-fundamentals"],
+    "three": ["all"],
+    "@react-three/fiber": ["all"],
+    "@react-three/drei": ["r3f-animation", "r3f-geometry", "r3f-interaction", "r3f-lighting", "r3f-loaders", "r3f-materials", "r3f-shaders", "r3f-textures"],
+    "@react-three/rapier": ["r3f-physics"],
+    "@react-three/postprocessing": ["r3f-postprocessing"],
+    "postprocessing": ["r3f-postprocessing"],
+    "@types/react": ["all TypeScript examples"],
+    "@types/three": ["all TypeScript examples"]
+  }
+}

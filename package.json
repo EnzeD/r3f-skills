@@ -1,0 +1,29 @@
+{
+  "name": "r3f-skills-validation",
+  "private": true,
+  "type": "module",
+  "engines": { "node": ">=22.12.0" },
+  "scripts": {
+    "check": "node scripts/check-skills.mjs && tsc --noEmit",
+    "check:releases": "node scripts/check-releases.mjs",
+    "test:browser": "npm run check && node scripts/check-browser.mjs",
+    "dev": "node scripts/check-skills.mjs && vite --host 127.0.0.1"
+  },
+  "devDependencies": {
+    "@react-three/drei": "10.7.8",
+    "@react-three/fiber": "9.7.0",
+    "@react-three/postprocessing": "3.1.1",
+    "@react-three/rapier": "2.2.0",
+    "@types/react": "19.2.18",
+    "@types/react-dom": "19.2.5",
+    "@types/three": "0.185.4",
+    "postprocessing": "6.39.4",
+    "playwright": "1.62.1",
+    "react": "19.2.8",
+    "react-dom": "19.2.8",
+    "three": "0.185.1",
+    "typescript": "7.0.2",
+    "vite": "8.2.2",
+    "yaml": "2.9.0"
+  }
+}

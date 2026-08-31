@@ -1,0 +1,54 @@
+{
+  "skill_name": "r3f-skills",
+  "notes": "Each prompt embeds a concrete trap the corresponding skill warns about. Baseline = no skill.",
+  "evals": [
+    {
+      "id": 0,
+      "name": "typed-shader-material",
+      "primary_skill": "r3f-shaders",
+      "prompt": "i've got a vite + react-three-fiber project (fiber 9.7, three 0.185, react 19, typescript strict) and i want a custom shader material for a water surface - animated waves in the vertex shader, uniforms for time and a base color. i want to use it as a reusable <WaveMaterial time={...} color={...} /> component with real typescript types, not `any` everywhere. can you write it?",
+      "expected_output": "A shaderMaterial (drei) or extend-based material with Fiber 9 typing, uniform updated in useFrame, no removed Object3DNode / global JSX.IntrinsicElements augmentation.",
+      "files": []
+    },
+    {
+      "id": 1,
+      "name": "gltf-ao-map-flat",
+      "primary_skill": "r3f-textures",
+      "prompt": "my interior scene gltf looks totally flat - the ambient occlusion map isn't doing anything at all. three r185, loading with useGLTF('/models/room.glb'). the glb has aoMap, roughnessMap, normalMap and a basecolor texture baked in. i also tried loading the AO separately with useTexture and assigning it. what am i missing here?",
+      "expected_output": "Explains UV channel selection via texture.channel (not blind uv->uv2 copy), and NoColorSpace for data maps vs SRGBColorSpace for color maps. Notes aoMap needs aoMapIntensity and the right UV set.",
+      "files": []
+    },
+    {
+      "id": 2,
+      "name": "selective-hover-glow",
+      "primary_skill": "r3f-postprocessing",
+      "prompt": "i want ONLY the object the user is currently hovering to glow, everything else stays normal. using @react-three/postprocessing 3.1. i wrapped the mesh in <Selection> and added <Bloom> to the EffectComposer but now every bright thing in the scene glows, not just the hovered one. there are a few emissive props in the scene already.",
+      "expected_output": "Uses Selection + Select + SelectiveBloom (not plain Bloom), passes lights, notes tone mapping ownership, and tests against an equally bright unselected object.",
+      "files": []
+    },
+    {
+      "id": 3,
+      "name": "gltf-many-instances",
+      "primary_skill": "r3f-loaders",
+      "prompt": "i need to scatter about 20 copies of the same tree.glb across a terrain, each at a different position and rotation, and two of them should have differently colored leaves. right now i map over an array and render <primitive object={scene} position={p} /> and only ONE tree ever shows up. r3f 9, drei 10.",
+      "expected_output": "Explains that an Object3D can only have one parent so primitive reparents it; uses Clone (or SkeletonUtils.clone), and clones the specific material before recoloring rather than mutating the shared cached one.",
+      "files": []
+    },
+    {
+      "id": 4,
+      "name": "rapier-held-key-force",
+      "primary_skill": "r3f-physics",
+      "prompt": "using @react-three/rapier 2.2 - i have a ball that should get a steady push to the right while the player holds the right arrow key, and coast to a stop when they let go. i'm calling rigidBody.addForce({x: 10, y: 0, z: 0}) inside useFrame while the key is down, but it accelerates insanely fast and basically never stops. what's the right way to do this?",
+      "expected_output": "Explains addForce accumulates and persists across steps until reset, distinguishes addForce/applyImpulse/setLinvel, and gives a correct per-step approach with damping.",
+      "files": []
+    },
+    {
+      "id": 5,
+      "name": "demand-frameloop-frozen",
+      "primary_skill": "r3f-animation",
+      "prompt": "my r3f scene was cooking laptop batteries so i switched the Canvas to frameloop='demand'. now orbit controls still work fine, but my slowly rotating logo mesh is completely frozen, and clicking a DOM button that changes a mesh's color does nothing until i resize the window. how do i fix this without just going back to always?",
+      "expected_output": "Explains demand renders only on invalidate(); continuous animation must call invalidate() each frame it wants (or use a wake/settle pattern); React state changes outside Canvas need invalidate; drei controls self-invalidate which is why they work.",
+      "files": []
+    }
+  ]
+}
